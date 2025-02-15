@@ -1,0 +1,155 @@
+body {
+  background-color: white;
+  color: black;
+  padding: 0px;
+  margin: 0px;
+  overflow-x: hidden;
+  height: 100%;
+}
+#root {
+  padding: 0;
+  margin: 0;
+  background-color: white;
+  height: 100%;
+}
+.nav-wrapper {
+  width: 100vw;
+  height: 4rem;
+  background-color: #a494fb;
+  position: fixed;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.links svg {
+  width: 1.3rem;
+}
+.links {
+  display: flex;
+  gap: 3rem;
+}
+
+.signup,
+.login {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.form-wrapper {
+  width: 60%;
+  height: 26rem;
+  background-color: white;
+  display: flex;
+}
+.form-wrapper .box {
+  width: 50%;
+  height: 100%;
+  background-color: #a494fb;
+}
+.form-wrapper .form {
+  width: 50%;
+  height: 100%;
+  padding-left: 2rem;
+}
+.form hr {
+  width: 10rem;
+  margin-right: 30rem;
+}
+.form ul {
+  padding: 0;
+}
+.form li {
+  list-style: none;
+  margin-top: 2.2rem;
+}
+.form input {
+  background-color: white;
+  border: 0;
+  border-bottom: 2px solid black;
+  width: 15rem;
+  color: black;
+}
+.form button {
+  background-color: #a494fb;
+  margin-bottom: 1rem;
+}
+.form span {
+  color: #a494fb;
+}
+.form span:hover {
+  text-decoration: underline;
+}
+.form .link {
+  color: black;
+}
+.google h5 {
+  text-align: center;
+  font-weight: 400;
+}
+.google {
+  margin-top: 3rem;
+}
+.error {
+  color: red;
+  font-size: 0.8rem;
+}
+
+.profile {
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  /* margin-bottom: 200px; */
+  gap: 2rem;
+}
+.profile-picture {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 100%;
+  /* border: 3px solid black; */
+  margin-top: 3.3rem;
+}
+.profile-follow {
+  display: flex;
+  gap: 2rem;
+  align-items: start;
+}
+.profile-follow h5 {
+  font-weight: 400;
+}
+.profile-data {
+  margin-top: 1rem;
+}
+.profile-data h2,
+.profile-data p {
+  text-align: center;
+}
+.profile-username span {
+  width: 0.8rem;
+  cursor: pointer;
+}
+.modal-h2 {
+  text-align: center;
+}
+.modal-form li {
+  list-style: none;
+}
+.modal-form input {
+  background-color: white;
+  border: 0;
+  border-bottom: 2px solid black;
+  color: black;
+}
+.modal-form button {
+  margin-top: 1rem;
+}
+
+/* userPicture */
+.picture-wrapper,
+.image-explore:hover {
+  cursor: pointer;
+  opacity: 70%;
+}
