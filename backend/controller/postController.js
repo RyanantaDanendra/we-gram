@@ -21,8 +21,10 @@ const getPost = async (req, res) => {
   const liked = await Like.find({ userId, postId });
   const totalLiked = await Like.countDocuments({ postId });
 
-  const showComment = await Comment.find().sort({ createdAt: -1 });
-  const totalComment = await Comment.countDocuments();
+  const showComment = await Comment.find({ userId, postId }).sort({
+    createdAt: -1,
+  });
+  const totalComment = await Comment.countDocuments({ postId });
 
   res.status(200).json({ post, liked, totalLiked, showComment, totalComment });
 };
@@ -137,28 +139,25 @@ const commentPost = async (req, res) => {
   try {
     const userId = req.user._id;
     if (!userId) {
-      res.status(400).json({ message: "User not found!" });
+      return res.status(400).json({ message: "User not found!" });
     }
 
     const postId = req.params.id;
     if (!postId) {
-      res.status(404).json({ message: "Post not found!" });
+      return res.status(404).json({ message: "Post not found!" });
     }
 
-    const { commentText } = req.body;
-    if (!commentText) {
-      res.status(400).json({ message: "Please Fill the field" });
-    }
+    const { comment } = req.body;
 
-    const comment = await Comment.create({
+    const commentData = await Comment.create({
       userId,
       postId,
-      comment: commentText,
+      comment,
     });
 
-    res.status(200).json(comment);
+    return res.status(200).json(commentData);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
 

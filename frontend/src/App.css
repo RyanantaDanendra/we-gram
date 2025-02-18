@@ -148,7 +148,7 @@ body {
 }
 
 /* userPicture */
-.picture-wrapper,
+.picture-wrapper:hover,
 .image-explore:hover {
   cursor: pointer;
   opacity: 70%;
