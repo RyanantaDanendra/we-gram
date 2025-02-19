@@ -7,12 +7,12 @@ const {
   addUsername,
   addImage,
   deleteImage,
+  searchUser,
 } = require("../controller/userController");
 // const authenticateToken = require("../middleware/authenticateToken");
 const upload = multer({ dest: "../frontend/public/images" });
 
 const router = express.Router();
-// router.use(authenticateToken);
 
 router.post("/login", userLogin);
 
@@ -28,5 +28,8 @@ router
 
 // delete picture
 router.post("/delete/image/:id", deleteImage).use(requireAuth);
+
+// search user
+router.post("/search", searchUser).use(requireAuth);
 
 module.exports = router;

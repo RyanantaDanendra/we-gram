@@ -103,7 +103,7 @@ const Post = () => {
         </div>
       );
     } else {
-      <Atom color="#32cd32" size="medium" text="" textColor="" />;
+      return <Atom color="#32cd32" size="medium" text="" textColor="" />;
     }
   };
 

@@ -125,10 +125,32 @@ const deleteImage = async (req, res) => {
   }
 };
 
+// search user
+const searchUser = async (req, res) => {
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: "Field required!" });
+  }
+
+  const regex = new RegExp(`^${username}`, "i");
+  const foundUser = await User.find({ username: { $regex: regex } })
+    .then((users) => {
+      if (!users || users.length === 0) {
+        return res.json({ error: "No Users Found" });
+      }
+      return res.status(200).json(users);
+    })
+    .catch((error) => {
+      return res.status(500).json({ error: error.message });
+    });
+};
+
 module.exports = {
   userLogin,
   userSignup,
   addUsername,
   addImage,
   deleteImage,
+  searchUser,
 };

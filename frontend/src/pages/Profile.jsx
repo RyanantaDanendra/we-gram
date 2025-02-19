@@ -141,6 +141,7 @@ const Profile = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             userId,
@@ -174,6 +175,12 @@ const Profile = () => {
 
         // close the modal
         closeModal();
+
+        Swal.fire({
+          title: "Success",
+          text: "Username added successfully!",
+          icon: "success",
+        });
       }
     } catch (error) {
       console.error("Fetch Error: ", error);

@@ -1,13 +1,47 @@
 import Navbar from "../components/Navbar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { Atom } from "react-loading-indicators";
+import UserImg from "../../public/images/user.jpg";
 
 const Explore = () => {
   const userLocal = JSON.parse(localStorage.getItem("user"));
   const token = userLocal.token;
 
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [posts, setPosts] = useState([]);
+
+  // variable for input value changes
+  const [userInput, setUserInput] = useState("");
+  // variable for user found in the search user function
+  const [foundUser, setFoundUser] = useState([]);
+  // variable for triggering displayFoundUser()
+  const [showResult, setShowResult] = useState();
+  // variable to remove onclick on showResult
+  const foundResultRef = useRef(null);
+  // form ref
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      // check if the click is outside of the ref
+      if (
+        foundResultRef.current &&
+        !foundResultRef.current.contains(e.target) &&
+        formRef.current &&
+        !formRef.current.contains(e.target)
+      ) {
+        setShowResult(false);
+      }
+    };
+
+    // add event listener to entire page
+    document.addEventListener("click", handleClickOutside);
+    // remove event listener if the user clicked outside of the ref
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const getPosts = async (e) => {
@@ -41,20 +75,152 @@ const Explore = () => {
   const displayImage = () => {
     const path = "../images/";
 
-    return posts.map((post) => (
-      <Link to={`/post/${post._id}`}>
-        <div
-          className="image-explore"
-          style={{ width: "10rem", height: "10rem", cursor: "pointer" }}
-        >
-          <img
-            src={`${path}${post.picture}`}
-            alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        </div>
-      </Link>
-    ));
+    if (posts) {
+      return posts.map((post) => (
+        <Link to={`/post/${post._id}`}>
+          <div
+            className="image-explore"
+            style={{ width: "10rem", height: "10rem", cursor: "pointer" }}
+          >
+            <img
+              src={`${path}${post.picture}`}
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </div>
+        </Link>
+      ));
+    } else {
+      return <Atom color="#32cd32" size="medium" text="" textColor="" />;
+    }
+  };
+
+  const searchUser = async (e) => {
+    e.preventDefault();
+
+    setFoundUser([]);
+    setIsLoading(true);
+    // setShowResult(false);
+
+    try {
+      const response = await fetch("http://localhost:3000/user/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ username: userInput }),
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        setError(json.error.message);
+        setFoundUser([]);
+      }
+
+      if (response.ok) {
+        setFoundUser(json);
+        setIsLoading(false);
+        setShowResult(true);
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const displayFoundUser = () => {
+    const path = "../images/";
+
+    if (showResult) {
+      if (isLoading) {
+        return (
+          <div
+            className="displayUser-wrapper"
+            style={{
+              width: "20rem",
+              height: "6rem",
+              background: "white",
+              position: "absolute",
+              top: 70,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Atom color="#32cd32" size="medium" text="" textColor="" />;
+          </div>
+        );
+      }
+
+      if (foundUser.length > 0) {
+        return (
+          <div
+            ref={foundResultRef}
+            className="displayUser-wrapper"
+            style={{
+              width: "20rem",
+              height: "20rem",
+              background: "#FFFFFF90",
+              position: "absolute",
+              top: 70,
+              paddingLeft: "2rem",
+            }}
+          >
+            {foundUser.map((user) => (
+              <div
+                className="founduser-content"
+                style={{ display: "flex", alignItems: "center", gap: "1rem" }}
+              >
+                <div
+                  className="image-wrapper"
+                  style={{
+                    width: "2rem",
+                    height: "2rem",
+                    borderRadius: "100%",
+                  }}
+                >
+                  {user.picture !== null ? (
+                    <img
+                      src={`${path}${user.picture}`}
+                      alt=""
+                      style={{
+                        objectFit: "cover",
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "100%",
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src={`${path}${UserImg}`}
+                      alt=""
+                      style={{ objectFit: "cover" }}
+                    />
+                  )}
+                </div>
+                <p>{user.username}</p>
+              </div>
+            ))}
+          </div>
+        );
+      } else {
+        return (
+          <div
+            ref={foundResultRef}
+            className="displayUser-wrapper"
+            style={{
+              width: "20rem",
+              height: "6rem",
+              background: "#FFFFFF90",
+              position: "absolute",
+              top: 70,
+            }}
+          >
+            <p style={{ textAlign: "center" }}>No User Found!</p>
+          </div>
+        );
+      }
+    }
   };
 
   return (
@@ -66,14 +232,57 @@ const Explore = () => {
           width: "100vw",
           height: "100vh",
           display: "flex",
-          justifyContent: "center",
-          alignItems: "start",
+          flexDirection: "column",
+          justifyContent: "start",
+          alignItems: "center",
           gap: "2px",
         }}
       >
-        {displayImage()}
+        <div
+          className="input-wrapper"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "1rem",
+          }}
+        >
+          <form ref={formRef} onSubmit={searchUser}>
+            <input
+              type="text"
+              onChange={(e) => setUserInput(e.target.value)}
+              value={userInput}
+              placeholder="Search user. . ."
+              style={{
+                backgroundColor: "white",
+                color: "black",
+                width: "15rem",
+                height: "2rem",
+                margin: 0,
+              }}
+            />
+            <button
+              type="submit"
+              onClick={userInput !== "" ? displayFoundUser : null}
+              style={{ backgroundColor: "transparent" }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ width: "1rem" }}
+                viewBox="0 0 512 512"
+              >
+                <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z" />
+              </svg>
+            </button>
+          </form>
+        </div>
+        {displayFoundUser()}
+        <div style={{ display: "flex", gap: "2px", marginTop: "3rem" }}>
+          {displayImage()}
+        </div>
       </div>
       ))
+      {error !== null ? <p>{error}</p> : null}
     </div>
   );
 };
