@@ -1,3 +1,4 @@
+const User = require("../model/userModel");
 const Post = require("../model/postModel");
 const Like = require("../model/likeModel");
 const Comment = require("../model/commentModel");
@@ -21,12 +22,23 @@ const getPost = async (req, res) => {
   const liked = await Like.find({ userId, postId });
   const totalLiked = await Like.countDocuments({ postId });
 
-  const showComment = await Comment.find({ userId, postId }).sort({
-    createdAt: -1,
-  });
+  const showComment = await Comment.find({ postId })
+    .sort({
+      createdAt: -1,
+    })
+    .populate("user", "username picture");
+
+  console.log(showComment);
+
   const totalComment = await Comment.countDocuments({ postId });
 
-  res.status(200).json({ post, liked, totalLiked, showComment, totalComment });
+  res.status(200).json({
+    post,
+    liked,
+    totalLiked,
+    showComment,
+    totalComment,
+  });
 };
 
 // delete post
@@ -150,9 +162,9 @@ const commentPost = async (req, res) => {
     const { comment } = req.body;
 
     const commentData = await Comment.create({
-      userId,
       postId,
       comment,
+      user: userId,
     });
 
     return res.status(200).json(commentData);

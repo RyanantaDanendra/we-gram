@@ -26,8 +26,10 @@ const Post = () => {
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState([]);
   const [totalComment, setTotalComment] = useState();
+  const [commentedUser, setCommentedUser] = useState([]);
   // modal open
   const [isOpen, setIsOpen] = useState(false);
+  console.log(showComments);
 
   useEffect(() => {
     const getPost = async () => {
@@ -51,6 +53,7 @@ const Post = () => {
           setTotalLiked(json.totalLiked);
           setShowComments(json.showComment);
           setTotalComment(json.totalComment);
+          setCommentedUser(json.commentedUser);
         }
       } catch (error) {
         setError(error.message);
@@ -69,8 +72,9 @@ const Post = () => {
       right: "auto",
       marginRight: "-50%",
       width: "25rem",
+      // height: "20rem",
       padding: 0,
-      overflowX: "hidden",
+      overflow: "hidden",
       transform: "translate(-50%, -50%)",
     },
   };
@@ -306,11 +310,14 @@ const Post = () => {
               style={customStyle}
             >
               <div
-                className="input-wrapper"
+                className="comments-wrapper"
                 style={{
                   paddingLeft: "2rem",
                   overflowY: "scroll",
+                  height: "100%",
                   width: "100%",
+                  position: "absolute",
+                  zIndex: -1,
                 }}
               >
                 {showComments
@@ -320,51 +327,63 @@ const Post = () => {
                   : null}
               </div>
 
-              <form
-                onSubmit={commentPost}
+              <div
+                className="form-wrapper"
                 style={{
                   width: "100%",
+                  height: "3rem",
                   backgroundColor: "#00000010",
+                  position: "absolute",
+                  bottom: "0",
                 }}
               >
-                <div
-                  className="comment-input"
+                <form
+                  onSubmit={commentPost}
                   style={{
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center",
-                    marginTop: "10rem",
-                    paddingLeft: "1rem",
+                    width: "100%",
                   }}
                 >
-                  <input
-                    type="text"
-                    name="comment"
-                    onChange={(e) => setComment(e.target.value)}
-                    value={comment}
+                  <div
+                    className="comment-input"
                     style={{
-                      backgroundColor: "transparent",
-                      border: 0,
-                      borderBottom: "1px solid black",
-                      color: "black",
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                      // marginTop: "10rem",
+                      paddingLeft: "1rem",
+                      justifyContent: "center",
+                      zIndex: 100,
                     }}
-                  />
-                  <button
-                    type="submit"
-                    style={{ backgroundColor: "transparent" }}
                   >
-                    <span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 512 512"
-                        style={{ width: "1rem" }}
-                      >
-                        <path d="M307 34.8c-11.5 5.1-19 16.6-19 29.2l0 64-112 0C78.8 128 0 206.8 0 304C0 417.3 81.5 467.9 100.2 478.1c2.5 1.4 5.3 1.9 8.1 1.9c10.9 0 19.7-8.9 19.7-19.7c0-7.5-4.3-14.4-9.8-19.5C108.8 431.9 96 414.4 96 384c0-53 43-96 96-96l96 0 0 64c0 12.6 7.4 24.1 19 29.2s25 3 34.4-5.4l160-144c6.7-6.1 10.6-14.7 10.6-23.8s-3.8-17.7-10.6-23.8l-160-144c-9.4-8.5-22.9-10.6-34.4-5.4z" />
-                      </svg>
-                    </span>
-                  </button>
-                </div>
-              </form>
+                    <input
+                      type="text"
+                      name="comment"
+                      onChange={(e) => setComment(e.target.value)}
+                      value={comment}
+                      style={{
+                        backgroundColor: "transparent",
+                        border: 0,
+                        borderBottom: "1px solid black",
+                        color: "black",
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      style={{ backgroundColor: "transparent" }}
+                    >
+                      <span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 512 512"
+                          style={{ width: "1rem" }}
+                        >
+                          <path d="M307 34.8c-11.5 5.1-19 16.6-19 29.2l0 64-112 0C78.8 128 0 206.8 0 304C0 417.3 81.5 467.9 100.2 478.1c2.5 1.4 5.3 1.9 8.1 1.9c10.9 0 19.7-8.9 19.7-19.7c0-7.5-4.3-14.4-9.8-19.5C108.8 431.9 96 414.4 96 384c0-53 43-96 96-96l96 0 0 64c0 12.6 7.4 24.1 19 29.2s25 3 34.4-5.4l160-144c6.7-6.1 10.6-14.7 10.6-23.8s-3.8-17.7-10.6-23.8l-160-144c-9.4-8.5-22.9-10.6-34.4-5.4z" />
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </form>
+              </div>
             </Modal>
           </div>
         </div>
