@@ -10,6 +10,7 @@ const {
   likePost,
   explorePosts,
   commentPost,
+  deleteComment,
 } = require("../controller/postController");
 // multer method
 const upload = multer({ dest: "../frontend/public/images" });
@@ -37,5 +38,8 @@ router.post("/like/:id", likePost);
 
 // comment post
 router.post("/comment/:id", commentPost);
+
+// delete comment
+router.post("/comment/delete/:id", deleteComment);
 
 module.exports = router;

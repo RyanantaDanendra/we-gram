@@ -29,37 +29,38 @@ const Post = () => {
   const [commentedUser, setCommentedUser] = useState([]);
   // modal open
   const [isOpen, setIsOpen] = useState(false);
-  console.log(showComments);
+  // comment user picture path
+  const userPicturePath = "../images/";
+
+  const getPost = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/post/${id}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        setError(json.error.messag4);
+      }
+
+      if (response.ok) {
+        setPost(json.post);
+        setLiked(json.liked);
+        setTotalLiked(json.totalLiked);
+        setShowComments(json.showComment);
+        setTotalComment(json.totalComment);
+        setCommentedUser(json.commentedUser);
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
   useEffect(() => {
-    const getPost = async () => {
-      try {
-        const response = await fetch(`http://localhost:3000/post/${id}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const json = await response.json();
-
-        if (!response.ok) {
-          setError(json.error.messag4);
-        }
-
-        if (response.ok) {
-          setPost(json.post);
-          setLiked(json.liked);
-          setTotalLiked(json.totalLiked);
-          setShowComments(json.showComment);
-          setTotalComment(json.totalComment);
-          setCommentedUser(json.commentedUser);
-        }
-      } catch (error) {
-        setError(error.message);
-      }
-    };
-
     getPost();
   }, [id]);
 
@@ -218,6 +219,52 @@ const Post = () => {
     }
   };
 
+  const deleteComment = (e, id) => {
+    e.preventDefault();
+
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Comment datas will be deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/post/comment/delete/${post?._id}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ commentId: id }),
+            }
+          );
+
+          if (!response.ok) {
+            setError(json.error.message);
+          }
+
+          if (response.ok) {
+            getPost();
+          }
+        } catch (error) {
+          setError(error.message);
+        }
+
+        Swal.fire({
+          title: "Deleted!",
+          text: "Your file has been deleted.",
+          icon: "success",
+        });
+      }
+    });
+  };
+
   return (
     <div className="Post" style={{ width: "100vw", height: "100vh" }}>
       <Navbar />
@@ -314,15 +361,65 @@ const Post = () => {
                 style={{
                   paddingLeft: "2rem",
                   overflowY: "scroll",
-                  height: "100%",
+                  height: "9.5rem",
                   width: "100%",
-                  position: "absolute",
-                  zIndex: -1,
                 }}
               >
                 {showComments
                   ? showComments.map((comment) => {
-                      return <p key={comment._id}>{comment.comment}</p>;
+                      return (
+                        <div
+                          className="comment"
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: "10px",
+                            paddingRight: "2rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
+                            }}
+                          >
+                            {comment.user?.picture ? (
+                              <div style={{ width: "2rem" }}>
+                                <img
+                                  src={`${userPicturePath}${comment.user.picture}`}
+                                  alt="user"
+                                  style={{
+                                    width: "100%",
+                                    height: "100$",
+                                    borderRadius: "100%",
+                                    objectFit: "contain",
+                                  }}
+                                />
+                              </div>
+                            ) : null}
+                            <p key={comment._id}>{comment.comment}</p>
+                          </div>
+                          {post?.userId == userId ? (
+                            <button
+                              style={{
+                                backgroundColor: "transparent",
+                                marginLeft: "autho",
+                              }}
+                              onClick={(e) => deleteComment(e, comment._id)}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 448 512"
+                                style={{ width: "1rem" }}
+                              >
+                                <path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0L284.2 0c12.1 0 23.2 6.8 28.6 17.7L320 32l96 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 96C14.3 96 0 81.7 0 64S14.3 32 32 32l96 0 7.2-14.3zM32 128l384 0 0 320c0 35.3-28.7 64-64 64L96 512c-35.3 0-64-28.7-64-64l0-320zm96 64c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16z" />
+                              </svg>
+                            </button>
+                          ) : null}
+                        </div>
+                      );
                     })
                   : null}
               </div>

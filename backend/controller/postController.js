@@ -173,6 +173,21 @@ const commentPost = async (req, res) => {
   }
 };
 
+const deleteComment = async (req, res) => {
+  const postId = req.params.id;
+  const userId = await Post.findOne({ _id: postId }).userId;
+  console.log(userId);
+  const { commentId } = req.body;
+
+  if (Post.findOne({ _id: postId, userId })) {
+    const deleteComment = await Comment.deleteOne({ _id: commentId });
+  } else {
+    res.status(400).json({ error: "You cant delete this comment!" });
+  }
+
+  res.status(200).json({ message: "Comment deleted successfully" });
+};
+
 module.exports = {
   getPosts,
   addPost,
@@ -181,4 +196,5 @@ module.exports = {
   likePost,
   explorePosts,
   commentPost,
+  deleteComment,
 };
