@@ -1,5 +1,6 @@
 import "../App.css";
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 import Navbar from "../components/Navbar";
 import Modal from "react-modal";
@@ -8,15 +9,23 @@ import UserImg from "../../public/images/user.jpg";
 import UserPost from "../components/UserPost";
 import Swal from "sweetalert2";
 import { usePostContext } from "../hooks/usePostContext";
+import { Link } from "react-router-dom";
 
 Modal.setAppElement("#root");
 
 const Profile = () => {
   const { posts } = usePostContext();
-  const { dispatch, user } = useAuthContext();
+  const { dispatch, user, searchedUser } = useAuthContext();
+  const userId = user._id;
+  // variables to fetch user token
   const userLocal = JSON.parse(localStorage.getItem("user"));
   const token = userLocal.token;
-  const userId = user._id;
+  // url id
+  const { id } = useParams();
+  // user yang ditampilkan
+  const displayUser =
+    searchedUser && searchedUser?._id == id ? searchedUser : user;
+
   const [username, setUsername] = useState(user.username);
   const [error, setError] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -28,6 +37,7 @@ const Profile = () => {
   const [show, setShow] = useState(false);
   // uploading image
   const [file, setFile] = useState(user.picture);
+  console.log(posts);
 
   const openModal = (modalId) => {
     setIsOpen(modalId);
@@ -47,7 +57,7 @@ const Profile = () => {
   // display profile picture from db
   const displayImage = () => {
     const url = "../images/";
-    const picture = user.picture;
+    const picture = displayUser.picture;
 
     if (picture) {
       return (
@@ -244,6 +254,13 @@ const Profile = () => {
     await logout();
   };
 
+  // remove localStorage searchedUser
+  const removeSearchedUser = () => {
+    dispatch({ type: "SEARCHED_USER", payload: null });
+
+    localStorage.removeItem("searchedUser");
+  };
+
   // modal
   const customStyle = {
     content: {
@@ -258,6 +275,23 @@ const Profile = () => {
 
   return (
     <div className="profile-wrapper" style={{ marginBottom: "20rem" }}>
+      {/* return button */}
+      {searchedUser ? (
+        <Link to="/explore" onClick={removeSearchedUser}>
+          <div
+            className="return"
+            style={{ position: "absolute", top: 3, left: 3, cursor: "pointer" }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              style={{ width: "2rem" }}
+            >
+              <path d="M177.5 414c-8.8 3.8-19 2-26-4.6l-144-136C2.7 268.9 0 262.6 0 256s2.7-12.9 7.5-17.4l144-136c7-6.6 17.2-8.4 26-4.6s14.5 12.5 14.5 22l0 72 288 0c17.7 0 32 14.3 32 32l0 64c0 17.7-14.3 32-32 32l-288 0 0 72c0 9.6-5.7 18.2-14.5 22z" />
+            </svg>
+          </div>
+        </Link>
+      ) : null}
       <div className="profile" id="profile">
         <Navbar />
         <div
@@ -267,7 +301,7 @@ const Profile = () => {
           onMouseLeave={hideComponent}
         >
           {/* show user picture function */}
-          {show ? (
+          {show && userId == id ? (
             <div
               className="add-image"
               style={{
@@ -384,65 +418,91 @@ const Profile = () => {
         </div>
         <div className="profile-data">
           <div className="profile-username">
-            <h2>{!user.username ? "Username" : user.username}</h2>
+            <h2>
+              {!displayUser.username
+                ? "displayUser.email"
+                : displayUser.username}
+            </h2>
             {/* edit username button */}
-            <button
-              onClick={() => openModal("modal1")}
-              style={{
-                backgroundColor: "transparent",
-                color: "black",
-                border: "1px solid black",
-              }}
-            >
-              {!user.username ? "Add Username" : "Edit Username"}
-            </button>
-            {/* user username modal */}
-            <Modal
-              isOpen={isOpen == "modal1"}
-              onRequestClose={closeModal}
-              style={customStyle}
-              contentLabel="Example Modal"
-            >
-              <h2 className="modal-h2">
-                {!user.username ? "Add Username" : "Edit Username"}
-              </h2>
-              <form className="modal-form" onSubmit={addUsername}>
-                <ul>
-                  <li>
-                    <input
-                      type="text"
-                      onChange={(e) => setUsername(e.target.value)}
-                      value={username}
-                    />
-                  </li>
-                  <li>
-                    <button>{!user.username ? "add" : "Edit"}</button>
-                  </li>
-                  {error ? <p>{error}</p> : null}
-                </ul>
-              </form>
-            </Modal>
-            {/* logout button */}
-            <button
-              onClick={handleLogout}
-              style={{
-                backgroundColor: "transparent",
-                color: "black",
-                border: "1px solid black",
-                marginLeft: "5px",
-              }}
-            >
-              Logout
-            </button>
+            {userId == id ? (
+              <>
+                <button
+                  onClick={() => openModal("modal1")}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "black",
+                    border: "1px solid black",
+                  }}
+                >
+                  {!user.username ? "Add Username" : "Edit Username"}
+                </button>
+
+                {/* user username modal */}
+                <Modal
+                  isOpen={isOpen == "modal1"}
+                  onRequestClose={closeModal}
+                  style={customStyle}
+                  contentLabel="Example Modal"
+                >
+                  <h2 className="modal-h2">
+                    {!user.username ? "Add Username" : "Edit Username"}
+                  </h2>
+                  <form className="modal-form" onSubmit={addUsername}>
+                    <ul>
+                      <li>
+                        <input
+                          type="text"
+                          onChange={(e) => setUsername(e.target.value)}
+                          value={username}
+                        />
+                      </li>
+                      <li>
+                        <button>{!user.username ? "add" : "Edit"}</button>
+                      </li>
+                      {error ? <p>{error}</p> : null}
+                    </ul>
+                  </form>
+                </Modal>
+
+                {/* logout button */}
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "black",
+                    border: "1px solid black",
+                    marginLeft: "5px",
+                  }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : null}
+            {searchedUser ? (
+              <div
+                className="follow"
+                style={{ display: "flex", justifyContent: "center" }}
+              >
+                <button
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "black",
+                    border: "1px solid black",
+                  }}
+                >
+                  Follow
+                </button>
+              </div>
+            ) : null}
           </div>
           <div className="profile-follow">
             <div className="followers">
               <h5>followers</h5>
-              <p>{!user.followers ? "0" : user.followers}</p>
+              <p>{!displayUser.followers ? "0" : displayUser.followers}</p>
             </div>
             <div className="following">
               <h5>following</h5>
-              <p>{!user.following ? "0" : user.following}</p>
+              <p>{!displayUser.following ? "0" : displayUser.following}</p>
             </div>
             <div className="posts">
               <h5>posts</h5>

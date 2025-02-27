@@ -34,7 +34,7 @@ const Post = () => {
 
   const getPost = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/post/${id}`, {
+      const response = await fetch(`http://localhost:3000/post/single/${id}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

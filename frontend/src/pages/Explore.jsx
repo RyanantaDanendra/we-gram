@@ -1,10 +1,14 @@
 import Navbar from "../components/Navbar";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Atom } from "react-loading-indicators";
 import UserImg from "../../public/images/user.jpg";
+import { useAuthContext } from "../hooks/useAuthContext";
+import { usePostContext } from "../hooks/usePostContext";
 
 const Explore = () => {
+  const { dispatch } = useAuthContext();
+  // const { dispatchL: postDispatch } = usePostContext();
   const userLocal = JSON.parse(localStorage.getItem("user"));
   const token = userLocal.token;
 
@@ -12,6 +16,7 @@ const Explore = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [posts, setPosts] = useState([]);
+  // console.log(posts);
 
   // variable for input value changes
   const [userInput, setUserInput] = useState("");
@@ -129,6 +134,19 @@ const Explore = () => {
     }
   };
 
+  const handleSelectUser = async (user) => {
+    await dispatch({ type: "SEARCHED_USER", payload: user });
+
+    localStorage.setItem("searchedUser", JSON.stringify(user));
+  };
+
+  // hover to searched user page
+  const SearchedUser = ({ id, children }) => {
+    const link = useMemo(() => `/search/${id}`, [id]);
+
+    return <Link to={link}>{children}</Link>;
+  };
+
   const displayFoundUser = () => {
     const path = "../images/";
 
@@ -180,22 +198,29 @@ const Explore = () => {
                   }}
                 >
                   {user.picture !== null ? (
-                    <img
-                      src={`${path}${user.picture}`}
-                      alt=""
-                      style={{
-                        objectFit: "cover",
-                        width: "100%",
-                        height: "100%",
-                        borderRadius: "100%",
-                      }}
-                    />
+                    <SearchedUser id={user._id}>
+                      <img
+                        src={`${path}${user.picture}`}
+                        alt="Img"
+                        onClick={() => handleSelectUser(user)}
+                        style={{
+                          objectFit: "cover",
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: "100%",
+                          cursor: "pointer",
+                        }}
+                      />
+                    </SearchedUser>
                   ) : (
-                    <img
-                      src={`${path}${UserImg}`}
-                      alt=""
-                      style={{ objectFit: "cover" }}
-                    />
+                    <SearchedUser id={user._id}>
+                      <img
+                        src={`${path}${UserImg}`}
+                        onClick={() => handleSelectUser(user)}
+                        alt=""
+                        style={{ objectFit: "cover", cursor: "pointer" }}
+                      />
+                    </SearchedUser>
                   )}
                 </div>
                 <p>{user.username}</p>

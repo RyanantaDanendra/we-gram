@@ -1,5 +1,6 @@
 import { createContext, useReducer } from "react";
 import { useEffect } from "react";
+import SearchedUser from "../pages/SearchedUser";
 
 export const AuthContext = createContext();
 
@@ -13,6 +14,8 @@ export const authRedcer = (state, action) => {
       return { user: { ...state.user, username: action.payload } };
     case "UPDATE_USER_PICTURE":
       return { user: { ...state.user, picture: action.payload } };
+    case "SEARCHED_USER":
+      return { ...state, searchedUser: action.payload };
     default:
       return state;
   }
@@ -21,6 +24,7 @@ export const authRedcer = (state, action) => {
 export const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authRedcer, {
     user: null,
+    searchedUser: null,
   });
 
   // useEffect(() => {
@@ -34,6 +38,14 @@ export const AuthContextProvider = ({ children }) => {
 
     if (user && user.user) {
       dispatch({ type: "LOGIN", payload: user.user });
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    const searchedUser = JSON.parse(localStorage.getItem("searchedUser"));
+
+    if (searchedUser) {
+      dispatch({ type: "SEARCHED_USER", payload: searchedUser });
     }
   }, [dispatch]);
 

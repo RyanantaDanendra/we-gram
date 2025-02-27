@@ -7,7 +7,7 @@ const path = require("path");
 
 // get all user posts
 const getPosts = async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.params.id;
   const posts = await Post.find({ userId }).sort({ createdAt: -1 });
 
   res.status(200).json(posts);
@@ -15,30 +15,33 @@ const getPosts = async (req, res) => {
 
 // get post
 const getPost = async (req, res) => {
-  const postId = req.params.id;
-  const userId = req.user._id;
-  const post = await Post.findOne({ _id: postId });
+  try {
+    const postId = req.params.id;
+    const userId = req.user._id;
 
-  const liked = await Like.find({ userId, postId });
-  const totalLiked = await Like.countDocuments({ postId });
+    const [post, liked, totalLiked, showComment, totalComment] =
+      await Promise.all([
+        Post.findOne({ _id: postId }),
+        Like.find({ userId, postId }),
+        Like.countDocuments({ postId }),
+        Comment.find({ postId })
+          .sort({
+            createdAt: -1,
+          })
+          .populate("user", "username picture"),
+        Comment.countDocuments({ postId }),
+      ]);
 
-  const showComment = await Comment.find({ postId })
-    .sort({
-      createdAt: -1,
-    })
-    .populate("user", "username picture");
-
-  console.log(showComment);
-
-  const totalComment = await Comment.countDocuments({ postId });
-
-  res.status(200).json({
-    post,
-    liked,
-    totalLiked,
-    showComment,
-    totalComment,
-  });
+    return res.status(200).json({
+      post,
+      liked,
+      totalLiked,
+      showComment,
+      totalComment,
+    });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
 };
 
 // delete post
@@ -134,15 +137,20 @@ const explorePosts = async (req, res) => {
   try {
     const totalPosts = await Post.countDocuments();
 
+    if (totalPosts == 0) {
+      return res.status(404).json({ message: "No Post Found" });
+    }
+
     const posts = await Post.aggregate([{ $sample: { size: totalPosts } }]);
 
     if (!posts) {
-      res.status(404).json({ message: "No Post Found" });
+      return res.status(404).json({ message: "No Post Found" });
     }
+    // console.log(posts);
 
-    res.status(200).json(posts);
+    return res.status(200).json(posts);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
 
@@ -176,7 +184,6 @@ const commentPost = async (req, res) => {
 const deleteComment = async (req, res) => {
   const postId = req.params.id;
   const userId = await Post.findOne({ _id: postId }).userId;
-  console.log(userId);
   const { commentId } = req.body;
 
   if (Post.findOne({ _id: postId, userId })) {

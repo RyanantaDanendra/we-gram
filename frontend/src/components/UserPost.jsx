@@ -4,7 +4,9 @@ import { usePostContext } from "../hooks/usePostContext";
 import { Link } from "react-router-dom";
 
 const UserPost = () => {
-  const { user } = useAuthContext();
+  const { user, searchedUser } = useAuthContext();
+  const displayUser = searchedUser ? searchedUser : user;
+  const userId = searchedUser ? searchedUser._id : user._id;
   const { dispatch, posts } = usePostContext();
 
   useEffect(() => {
@@ -17,7 +19,7 @@ const UserPost = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:3000/post`, {
+        const response = await fetch(`http://localhost:3000/post/${userId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${userToken}`,
@@ -38,10 +40,10 @@ const UserPost = () => {
       }
     };
 
-    if (user) {
+    if (displayUser) {
       getPosts();
     }
-  }, [dispatch, user]);
+  }, [dispatch, userId]);
 
   const displayImage = () => {
     const url = "../images/";

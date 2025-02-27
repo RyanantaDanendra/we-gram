@@ -7,6 +7,7 @@ import Profile from "./pages/Profile";
 import Upload from "./pages/Upload";
 import Post from "./components/Post";
 import Explore from "./pages/Explore";
+import SearchedUser from "./pages/SearchedUser";
 import { useAuthContext } from "./hooks/useAuthContext";
 
 function App() {
@@ -30,6 +31,10 @@ function App() {
             />
             <Route path="/post/:id" element={!user ? <Login /> : <Post />} />
             <Route path="/explore" element={!user ? <Login /> : <Explore />} />
+            <Route
+              path="/search/:id"
+              element={!user ? <Login /> : <SearchedUser />}
+            />
           </Routes>
         </div>
       </BrowserRouter>

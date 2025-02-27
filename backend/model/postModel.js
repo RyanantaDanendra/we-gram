@@ -9,6 +9,7 @@ const postSchema = new Schema({
   },
   caption: {
     type: String,
+    required: false,
   },
   userId: {
     type: String,
@@ -18,4 +19,4 @@ const postSchema = new Schema({
 
 postSchema.set("timestamps", true);
 
-module.exports = mongoose.model("post", postSchema);
+module.exports = mongoose.model("Post", postSchema);
