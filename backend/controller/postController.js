@@ -2,6 +2,7 @@ const User = require("../model/userModel");
 const Post = require("../model/postModel");
 const Like = require("../model/likeModel");
 const Comment = require("../model/commentModel");
+const Follow = require("../model/followModel");
 const fs = require("fs");
 const path = require("path");
 

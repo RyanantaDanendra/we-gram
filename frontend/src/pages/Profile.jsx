@@ -37,7 +37,46 @@ const Profile = () => {
   const [show, setShow] = useState(false);
   // uploading image
   const [file, setFile] = useState(user.picture);
-  console.log(posts);
+  // does user follow
+  const [isFollow, setIsFollow] = useState();
+  // total followers
+  const [totalFollowers, setTotalFollowers] = useState();
+  // total following
+  const [totalFollowing, setTotalFollowing] = useState();
+  // trigger re-render
+  const [rerender, setRerender] = useState(0);
+
+  const fetchFollowData = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/user/follow/data/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const json = await response.json();
+      console.log(json);
+
+      if (!response.ok) {
+        setError(json.error.message);
+      }
+
+      if (response.ok) {
+        setIsFollow(json.followData);
+        setTotalFollowers(json.totalFollowers);
+        setTotalFollowing(json.totalFollowing);
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchFollowData();
+  }, [id, rerender]);
 
   const openModal = (modalId) => {
     setIsOpen(modalId);
@@ -261,6 +300,30 @@ const Profile = () => {
     localStorage.removeItem("searchedUser");
   };
 
+  const followUser = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/user/follow/${id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const json = await response.json();
+
+      if (!response.ok) {
+        setError(json.error.message);
+      }
+
+      if (response.ok) {
+        setRerender((prev) => prev + 1);
+      }
+    } catch (error) {
+      localStorage.setItem("followed".true);
+      setError(error.message);
+    }
+  };
+
   // modal
   const customStyle = {
     content: {
@@ -478,12 +541,14 @@ const Profile = () => {
                 </button>
               </>
             ) : null}
-            {searchedUser ? (
+            {/* follow button */}
+            {searchedUser && isFollow == null ? (
               <div
                 className="follow"
                 style={{ display: "flex", justifyContent: "center" }}
               >
                 <button
+                  onClick={followUser}
                   style={{
                     backgroundColor: "transparent",
                     color: "black",
@@ -493,16 +558,31 @@ const Profile = () => {
                   Follow
                 </button>
               </div>
-            ) : null}
+            ) : (
+              <div
+                className="follow"
+                style={{ display: "flex", justifyContent: "center" }}
+              >
+                <button
+                  onClick={followUser}
+                  style={{
+                    backgroundColor: "	#bb2124",
+                    color: "white",
+                  }}
+                >
+                  Unfollow
+                </button>
+              </div>
+            )}
           </div>
           <div className="profile-follow">
             <div className="followers">
               <h5>followers</h5>
-              <p>{!displayUser.followers ? "0" : displayUser.followers}</p>
+              <p>{totalFollowers}</p>
             </div>
             <div className="following">
               <h5>following</h5>
-              <p>{!displayUser.following ? "0" : displayUser.following}</p>
+              <p>{totalFollowing}</p>
             </div>
             <div className="posts">
               <h5>posts</h5>

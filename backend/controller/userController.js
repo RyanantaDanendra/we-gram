@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../model/userModel");
+const Follow = require("../model/followModel");
 const fs = require("fs");
 const path = require("path");
 
@@ -146,6 +147,56 @@ const searchUser = async (req, res) => {
     });
 };
 
+const follow = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    if (!userId) {
+      return res.status(400).status("Unauthorized");
+    }
+
+    const followedUserId = req.params.id;
+    if (!followedUserId) {
+      return res.status(400).json("User Id Required");
+    }
+
+    const findFollow = await Follow.findOne({ userId, followedUserId });
+    if (findFollow) {
+      const unfollow = await Follow.deleteOne({ userId, followedUserId });
+      return res.status(200).json(unfollow);
+    }
+
+    const followUser = await Follow.create({ userId, followedUserId });
+
+    return res.status(200).json(followUser);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+const fetchFollowData = async (req, res) => {
+  try {
+    const currentUserId = req.user._id;
+    const followedUserId = req.params.id;
+
+    const followData = await Follow.findOne({
+      userId: currentUserId,
+      followedUserId,
+    });
+
+    const totalFollowers = await Follow.find({
+      followedUserId,
+    }).countDocuments();
+
+    const totalFollowing = await Follow.find({
+      userId: followedUserId,
+    }).countDocuments();
+
+    return res.status(200).json({ followData, totalFollowers, totalFollowing });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 module.exports = {
   userLogin,
   userSignup,
@@ -153,4 +204,6 @@ module.exports = {
   addImage,
   deleteImage,
   searchUser,
+  follow,
+  fetchFollowData,
 };
