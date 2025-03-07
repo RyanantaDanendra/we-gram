@@ -1,6 +1,6 @@
 import Navbar from "../components/Navbar";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Atom } from "react-loading-indicators";
 import UserImg from "../../public/images/user.jpg";
 import { useAuthContext } from "../hooks/useAuthContext";
@@ -11,13 +11,12 @@ const Explore = () => {
   // const { dispatchL: postDispatch } = usePostContext();
   const userLocal = JSON.parse(localStorage.getItem("user"));
   const token = userLocal.token;
+  const location = useLocation();
 
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const [posts, setPosts] = useState([]);
-  // console.log(posts);
-
   // variable for input value changes
   const [userInput, setUserInput] = useState("");
   // variable for user found in the search user function
@@ -28,6 +27,11 @@ const Explore = () => {
   const foundResultRef = useRef(null);
   // form ref
   const formRef = useRef(null);
+
+  // re-render everytime location changes
+  useEffect(() => {
+    localStorage.setItem("lastPage", location.pathname);
+  }, [location]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {

@@ -191,7 +191,27 @@ const fetchFollowData = async (req, res) => {
       userId: followedUserId,
     }).countDocuments();
 
-    return res.status(200).json({ followData, totalFollowers, totalFollowing });
+    const userFollowers = await Follow.find({ followedUserId });
+    const userFollowersId = userFollowers.map((follower) => follower.userId);
+
+    const userFollowersData = await User.find({
+      _id: { $in: userFollowersId },
+    });
+
+    const userFollowing = await Follow.find({ userId: followedUserId });
+    const userFollowingId = userFollowing.map(
+      (following) => following.followedUserId
+    );
+
+    const userFollowingData = await User.find({ _id: userFollowingId });
+
+    return res.status(200).json({
+      followData,
+      totalFollowers,
+      totalFollowing,
+      userFollowersData,
+      userFollowingData,
+    });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

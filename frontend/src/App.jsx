@@ -15,29 +15,24 @@ function App() {
 
   return (
     <div className="App">
-      <BrowserRouter>
-        <div className="pages">
-          <Routes>
-            <Route path="/" element={user ? <Home /> : <Signup />} />
-            <Route path="/signup" element={!user ? <Signup /> : <Home />} />
-            <Route path="/login" element={!user ? <Login /> : <Home />} />
-            <Route
-              path="/profile/:id"
-              element={!user ? <Login /> : <Profile />}
-            />
-            <Route
-              path="/upload/:id"
-              element={!user ? <Login /> : <Upload />}
-            />
-            <Route path="/post/:id" element={!user ? <Login /> : <Post />} />
-            <Route path="/explore" element={!user ? <Login /> : <Explore />} />
-            <Route
-              path="/search/:id"
-              element={!user ? <Login /> : <SearchedUser />}
-            />
-          </Routes>
-        </div>
-      </BrowserRouter>
+      <div className="pages">
+        <Routes>
+          <Route path="/" element={user ? <Home /> : <Signup />} />
+          <Route path="/signup" element={!user ? <Signup /> : <Home />} />
+          <Route path="/login" element={!user ? <Login /> : <Home />} />
+          <Route
+            path="/profile/:id"
+            element={!user ? <Login /> : <Profile />}
+          />
+          <Route path="/upload/:id" element={!user ? <Login /> : <Upload />} />
+          <Route path="/post/:id" element={!user ? <Login /> : <Post />} />
+          <Route path="/explore" element={!user ? <Login /> : <Explore />} />
+          <Route
+            path="/search/:id"
+            element={!user ? <Login /> : <SearchedUser />}
+          />
+        </Routes>
+      </div>
     </div>
   );
 }

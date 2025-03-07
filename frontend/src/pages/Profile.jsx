@@ -1,6 +1,6 @@
 import "../App.css";
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 import Navbar from "../components/Navbar";
 import Modal from "react-modal";
@@ -30,6 +30,8 @@ const Profile = () => {
   const [error, setError] = useState(null);
   const [preview, setPreview] = useState(null);
   const { logout } = useLogout();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // add username modal
   const [isOpen, setIsOpen] = useState(false);
@@ -41,10 +43,18 @@ const Profile = () => {
   const [isFollow, setIsFollow] = useState();
   // total followers
   const [totalFollowers, setTotalFollowers] = useState();
+  // followers user data
+  const [followersData, setFollowersData] = useState([]);
   // total following
   const [totalFollowing, setTotalFollowing] = useState();
+  // user following data
+  const [userFollowing, setUserFollowing] = useState([]);
   // trigger re-render
-  const [rerender, setRerender] = useState(0);
+  const [rerender, setRerender] = useState();
+  // toggle list state
+  const [toggleFollowers, setToggleFollowers] = useState(false);
+  // toggle following
+  const [toggleFollowing, setToggleFollowing] = useState(false);
 
   const fetchFollowData = async () => {
     try {
@@ -58,7 +68,6 @@ const Profile = () => {
         }
       );
       const json = await response.json();
-      console.log(json);
 
       if (!response.ok) {
         setError(json.error.message);
@@ -68,6 +77,8 @@ const Profile = () => {
         setIsFollow(json.followData);
         setTotalFollowers(json.totalFollowers);
         setTotalFollowing(json.totalFollowing);
+        setFollowersData(json.userFollowersData);
+        setUserFollowing(json.userFollowingData);
       }
     } catch (error) {
       setError(error.message);
@@ -336,6 +347,95 @@ const Profile = () => {
     },
   };
 
+  // display follow button
+  const showFollowButton = () => {
+    if (searchedUser) {
+      if (userId !== id) {
+        if (isFollow == null) {
+          return (
+            <div
+              className="follow"
+              style={{ display: "flex", justifyContent: "center" }}
+            >
+              <button
+                onClick={followUser}
+                style={{
+                  backgroundColor: "transparent",
+                  color: "black",
+                  border: "1px solid black",
+                }}
+              >
+                Follow
+              </button>
+            </div>
+          );
+        } else {
+          return (
+            <div
+              className="follow"
+              style={{ display: "flex", justifyContent: "center" }}
+            >
+              <button
+                onClick={followUser}
+                style={{
+                  backgroundColor: "	#bb2124",
+                  color: "white",
+                }}
+              >
+                Unfollow
+              </button>
+            </div>
+          );
+        }
+      }
+    } else {
+      return null;
+    }
+  };
+
+  // show listUser
+  const showListFollowers = () => {
+    return (
+      <div
+        className="displayUser-wrapper"
+        style={{
+          width: "20rem",
+          height: "20rem",
+          background: "#FFFFFF90",
+          position: "absolute",
+          top: 70,
+          paddingLeft: "2rem",
+        }}
+      >
+        {followersData?.map((data) => {
+          return (
+            <div className="data-wrapper" style={{ display: "flex" }}>
+              <p>{data.username}</p>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // toggle followers list
+  const toggleFollowersList = () => {
+    setToggleFollowers((prev) => !prev);
+    setToggleFollowing(false);
+  };
+  // toggle following list
+  const toggleFollowingList = () => {
+    setToggleFollowing((prev) => !prev);
+    setToggleFollowers(false);
+  };
+
+  // update auth context
+  const handleSelectUser = async (data) => {
+    await dispatch({ type: "SEARCHED_USER", payload: data });
+
+    localStorage.setItem("searchedUser", JSON.stringify(data));
+  };
+
   return (
     <div className="profile-wrapper" style={{ marginBottom: "20rem" }}>
       {/* return button */}
@@ -542,48 +642,136 @@ const Profile = () => {
               </>
             ) : null}
             {/* follow button */}
-            {searchedUser && isFollow == null ? (
-              <div
-                className="follow"
-                style={{ display: "flex", justifyContent: "center" }}
-              >
-                <button
-                  onClick={followUser}
-                  style={{
-                    backgroundColor: "transparent",
-                    color: "black",
-                    border: "1px solid black",
-                  }}
-                >
-                  Follow
-                </button>
-              </div>
-            ) : (
-              <div
-                className="follow"
-                style={{ display: "flex", justifyContent: "center" }}
-              >
-                <button
-                  onClick={followUser}
-                  style={{
-                    backgroundColor: "	#bb2124",
-                    color: "white",
-                  }}
-                >
-                  Unfollow
-                </button>
-              </div>
-            )}
+            {showFollowButton()}
           </div>
           <div className="profile-follow">
-            <div className="followers">
+            <div
+              className="followers"
+              onClick={toggleFollowersList}
+              style={{ cursor: "pointer" }}
+            >
               <h5>followers</h5>
               <p>{totalFollowers}</p>
+              {/* followers data list */}
             </div>
-            <div className="following">
+            {toggleFollowers && (
+              <div
+                className="displayUser-wrapper"
+                style={{
+                  width: "8rem",
+                  height: "10rem",
+                  background: "#00000050",
+                  position: "absolute",
+                  top: 220,
+                  right: 340,
+                  paddingLeft: "1.2rem",
+                }}
+              >
+                {followersData?.map((data) => {
+                  return (
+                    <Link
+                      to={`/search/${data?._id}`}
+                      onClick={() => handleSelectUser(data)}
+                    >
+                      <div
+                        className="data-wrapper"
+                        style={{
+                          display: "flex",
+                          color: "white",
+                          width: "100%",
+                          alignItems: "center",
+                          gap: ".8rem",
+                        }}
+                      >
+                        <div
+                          className="image-wrapper"
+                          style={{
+                            width: "1rem",
+                            height: "1rem",
+                            borderRadius: "100%",
+                          }}
+                        >
+                          <img
+                            src={`../images/${data.picture}`}
+                            alt="picture"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              borderRadius: "100%",
+                            }}
+                          />
+                        </div>
+                        <p>{data.username}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+            <div
+              className="following"
+              style={{ cursor: "pointer" }}
+              onClick={toggleFollowingList}
+            >
               <h5>following</h5>
               <p>{totalFollowing}</p>
             </div>
+            {toggleFollowing && (
+              <div
+                className="displayUser-wrapper"
+                style={{
+                  width: "8rem",
+                  height: "10rem",
+                  background: "#00000050",
+                  position: "absolute",
+                  top: 220,
+                  right: 260,
+                  paddingLeft: "1.2rem",
+                }}
+              >
+                {userFollowing?.map((data) => {
+                  return (
+                    <Link
+                      to={`/search/${data?._id}`}
+                      onClick={() => handleSelectUser(data)}
+                    >
+                      <div
+                        className="data-wrapper"
+                        style={{
+                          display: "flex",
+                          color: "white",
+                          width: "100%",
+                          alignItems: "center",
+                          gap: ".8rem",
+                        }}
+                      >
+                        <div
+                          className="image-wrapper"
+                          style={{
+                            width: "1rem",
+                            height: "1rem",
+                            borderRadius: "100%",
+                          }}
+                        >
+                          <img
+                            src={`../images/${data.picture}`}
+                            alt="picture"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              borderRadius: "100%",
+                            }}
+                          />
+                        </div>
+                        <p>{data.username}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
             <div className="posts">
               <h5>posts</h5>
               <p>{!posts ? "0" : posts.length}</p>
